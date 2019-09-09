@@ -12,13 +12,12 @@ public class Teleop extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private Robot robot = new Robot();
-    private enum HopperPosition {Idle, up}
-    private HopperPosition hopperPosition = HopperPosition.Idle;
-
-    private boolean bPressedBefore = false;
-    private boolean intakeOn= false;
-    private double intakePower = 0;
-
+    private enum ClampPosition {open, closed}
+    private ClampPosition clampPosition = ClampPosition.open;
+    private enum PivotPosition {in, out}
+    private PivotPosition pivotPosition = PivotPosition.in;
+    private enum KickerPosition {in, out}
+    private KickerPosition kickerPosition = KickerPosition.in;
 
     @Override
     public void init() {
@@ -42,83 +41,89 @@ public class Teleop extends OpMode {
     @Override
     public void loop() {
 
-        // DRIVER CODE
+        // ***** DRIVER CODE *****
+
+        // Drivetrain
         double lPower;
         double rPower;
-
-        lPower = 1/(1+Math.exp(-gamepad1.left_stick_y)); // sigmoid compression function
-        rPower = 1/(1+Math.exp(-gamepad1.right_stick_y));
-
+        lPower = Math.abs(gamepad1.left_stick_y)*gamepad1.left_stick_y*0.6;
+        rPower = Math.abs(-gamepad1.right_stick_y)*gamepad1.right_stick_y*0.6;
         robot.drive(lPower, rPower);
 
 
-        // OPERATOR CODE
-
-        // Hopper gripper
-        if(gamepad2.b && !bPressedBefore){
-            if(!intakeOn ){
-                intakeOn = true;
-                intakePower = -1;
-                bPressedBefore = true;
-            }
-            else{
-                intakeOn = false;
-                intakePower = 0;
-                bPressedBefore = true;
-            }
-        }
-        if(!gamepad2.b){
-            bPressedBefore = false;
-        }
-
-        if(gamepad2.x){
-            intakePower = 1;
-        }
-        robot.setIntakePower(intakePower);
-
+        // ***** OPERATOR CODE *****
 
         // Intake
-        robot.setPivotPower(gamepad2.right_stick_y);
-        // Extension
-        robot.setExtensionPower(-gamepad2.left_stick_y);
-//        // Pivot
-//        if(gamepad2.left_bumper){
-//            robot.setPivotPower(-1);
-//        }else if(gamepad2.left_trigger>0.5){
-//            robot.setPivotPower(0.5);
-//        } else{
-//            robot.setPivotPower(0);
-//        }
+        robot.setIntakePower(gamepad2.left_stick_y);
 
         // Lift
-        if(gamepad2.dpad_up){
-            robot.setLiftPower(-1);
-        } else if (gamepad2.dpad_down){
-            robot.setLiftPower(1);
-        }else{
-            robot.setLiftPower(0);
-        }
+        robot.setLiftPower(0.5*gamepad2.right_stick_y);
 
-        // Hopper positions
         if(gamepad2.a){
-            hopperPosition = HopperPosition.Idle;
-        } else if(gamepad2.y){
-            hopperPosition = HopperPosition.up;
+            robot.setCapstonePosition(1);
+        }
+        if(gamepad2.b){
+            robot.setCapstonePosition(0.4);
+        }
+        if(gamepad2.y){
+            robot.setCapstonePosition(0.3);
         }
 
-        switch(hopperPosition){
-            case Idle:
-                robot.setHopperPosition(1);
+        // Pivot positions
+        if(gamepad2.dpad_down){
+            pivotPosition = PivotPosition.in;
+        } else if(gamepad2.dpad_up){
+            pivotPosition = PivotPosition.out;
+        }
+        switch(pivotPosition){
+            case in:
+                robot.setPivotPosition(1);
                 break;
-            case up:
-                robot.setHopperPosition(0.1);
+            case out:
+                robot.setPivotPosition(0.17);
                 break;
             default:
-                robot.setHopperPosition(1);
+                robot.setPivotPosition(1);
                 break;
         }
 
+
+        // Clamp positions
+        if(gamepad2.right_bumper){
+            clampPosition = ClampPosition.open;
+        } else if(gamepad2.right_trigger > 0.5){
+            clampPosition = ClampPosition.closed;
+        }
+        switch(clampPosition){
+            case open:
+                robot.setClampPosition(0);
+                break;
+            case closed:
+                robot.setClampPosition(0.7);
+                break;
+            default:
+                robot.setClampPosition(0);
+                break;
+        }
+
+    // Kicker positions
+        if(gamepad2.left_bumper){
+        kickerPosition = KickerPosition.out;
+    } else if(gamepad2.left_trigger > 0.5){
+        kickerPosition = KickerPosition.in;
     }
+        switch(kickerPosition){
+        case out:
+            robot.setKickerPosition(0);
+            break;
+        case in:
+            robot.setKickerPosition(0.4);
+            break;
+        default:
+            robot.setClampPosition(0);
+            break;
+    }
+}
 
     @Override
     public void stop() {

@@ -8,8 +8,8 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Robot {
 
-    private DcMotor lDrive, rDrive, lLift, rLift, extension, intake, pivot;
-    private Servo hopper;
+    private DcMotor lfDrive, lbDrive, rfDrive, rbDrive, lift, lIntake, rIntake;
+    private Servo clamp, pivot, kicker, capstone;
 
     private HardwareMap hwMap;
 
@@ -21,65 +21,80 @@ public class Robot {
         hwMap = ahwMap;
         opMode = op;
 
-        this.hopper = hwMap.get(Servo.class, "hopper");
+        this.clamp = hwMap.get(Servo.class, "clamp");
+        this.pivot = hwMap.get(Servo.class, "pivot");
+        this.kicker = hwMap.get(Servo.class, "kicker");
+        this.capstone = hwMap.get(Servo.class, "capstone");
 
         // Define and Initialize Motors
-        this.lLift = hwMap.get(DcMotor.class, "lLift");
-        this.rLift = hwMap.get(DcMotor.class, "rLift");
-        this.extension = hwMap.get(DcMotor.class, "extension");
-        this.intake = hwMap.get(DcMotor.class, "intake");
-        this.pivot = hwMap.get(DcMotor.class, "pivot");
+        this.lift = hwMap.get(DcMotor.class, "lift");
+        this.lIntake = hwMap.get(DcMotor.class, "lIntake");
+        this.rIntake = hwMap.get(DcMotor.class, "rIntake");
 
-        this.lDrive  = hwMap.get(DcMotor.class, "LD");
-        this.rDrive = hwMap.get(DcMotor.class, "RD");
-        lDrive.setDirection(DcMotor.Direction.REVERSE);
-        rDrive.setDirection(DcMotor.Direction.FORWARD);
+        this.lfDrive  = hwMap.get(DcMotor.class, "lfDrive");
+        this.lbDrive  = hwMap.get(DcMotor.class, "lbDrive");
+        this.rfDrive = hwMap.get(DcMotor.class, "rfDrive");
+        this.rbDrive = hwMap.get(DcMotor.class, "rbDrive");
+        lfDrive.setDirection(DcMotor.Direction.REVERSE);
+        lbDrive.setDirection((DcMotor.Direction.REVERSE));
+        rfDrive.setDirection(DcMotor.Direction.FORWARD);
+        rbDrive.setDirection((DcMotor.Direction.FORWARD));
 
         stop();
 
         setMotorMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         setMotorMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        lDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        rDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+        lfDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lbDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rfDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        rbDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
 
     public void setIntakePower(double intakePower){
-        intake.setPower(intakePower);
+        lIntake.setPower(intakePower);
+        rIntake.setPower(-intakePower);
     }
 
     public void setLiftPower(double liftPower){
-        lLift.setPower(liftPower);
-        rLift.setPower(-liftPower);
+        lift.setPower(liftPower);
     }
 
-    public void setExtensionPower(double extensionPower){
-        extension.setPower(extensionPower);
+    public void setPivotPosition(double pivotPosition){
+        pivot.setPosition(pivotPosition);
     }
 
-    public void setPivotPower(double pivotPower){
-        pivot.setPower(pivotPower);
+    public void setClampPosition(double clampPosition){
+        clamp.setPosition(clampPosition);
     }
 
-    public void setHopperPosition(double hopperPosition){
-        hopper.setPosition(hopperPosition);
+    public void setKickerPosition(double kickerPosition){
+        kicker.setPosition(kickerPosition);
+    }
+
+    public void setCapstonePosition(double capstonePosition) {
+        capstone.setPosition(capstonePosition);
     }
 
     public void drive(double lPower, double rPower){
-        lDrive.setPower(lPower);
-        rDrive.setPower(rPower);
+        lfDrive.setPower(lPower);
+        lbDrive.setPower(lPower);
+        rfDrive.setPower(rPower);
+        rbDrive.setPower(rPower);
     }
 
-
     public void stop(){
-        lDrive.setPower(0);
-        rDrive.setPower(0);
+        lfDrive.setPower(0);
+        lbDrive.setPower(0);
+        rfDrive.setPower(0);
+        rbDrive.setPower(0);
     }
 
     public void setMotorMode(DcMotor.RunMode mode) {
-        rDrive.setMode(mode);
-        lDrive.setMode(mode);
+        rfDrive.setMode(mode);
+        rbDrive.setMode(mode);
+        lfDrive.setMode(mode);
+        lbDrive.setMode(mode);
     }
 }
